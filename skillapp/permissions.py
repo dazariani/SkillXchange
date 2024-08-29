@@ -1,4 +1,5 @@
 from rest_framework import permissions
+from .models import Enrollment, SkillClass
 
 
 # Skill class permissions
@@ -35,11 +36,20 @@ class EnrollmentPermissionObjLevel(permissions.BasePermission):
   
 
 class EnrollmentPermissionModelLevel(permissions.BasePermission):
+  message = ''
 
   def has_permission(self, request, view):
+    currentEnrollments = Enrollment.objects.filter(skillClass=request.data.get('skillClass'))
+    maxStudentCount = SkillClass.objects.get(id=request.data.get('skillClass')).maxStudents
+    
 
     if (view.action == 'list' and request.user.is_staff == False) or (request.method == 'POST' and request.user.isStudent == False and request.user.is_staff == False):
+      self.message = 'You do not have permission to perform this action.'
       return False 
+    
+    if len(currentEnrollments) >= (maxStudentCount):
+      self.message = 'No more places available right now :('
+      return False
     
     return True
   

@@ -7,12 +7,20 @@ from .serializers import SkillClassSerializer, ReviewSerializer, EnrollmentSeria
 from .models import SkillClass, Review, Enrollment, CustomUser
 from .permissions import SkillClassPermissionObjLevel, SkillClassPermissionModelLevel, EnrollmentPermissionObjLevel, EnrollmentPermissionModelLevel, ReviewPermissionObjLevel, ReviewPermissionModelLevel
 from rest_framework.exceptions import AuthenticationFailed
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
+
 
 # Model ViewSets
 class SkillClassViewSet(viewsets.ModelViewSet):
     queryset = SkillClass.objects.all()
     serializer_class = SkillClassSerializer
     permission_classes = [SkillClassPermissionObjLevel & SkillClassPermissionModelLevel]
+
+    # Filtering result
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    ordering_fields = ['name', 'startDateTime']
+    search_fields = ['name']
 
 
 class EnrollmentViewSet(viewsets.ModelViewSet):
@@ -25,6 +33,12 @@ class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = [ReviewPermissionObjLevel, ReviewPermissionModelLevel]
+
+    # Filtering result
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        'stars': ['gte', 'in', 'lte']
+    }
 
 
 class UserViewSet(viewsets.ModelViewSet):
